@@ -1,21 +1,15 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <string.h>
+#include <unistd.h>
 
-int ft_strlen_ligne_fichier(FILE* fichier)
-{
-    int i = 0;
-    char lettre;
 
-    do
-    {
-        lettre = fgetc(fichier);
-        if(lettre == '\n')
-            i++;
-    } while (lettre != EOF);
-    
-    return i;
-}
+#define BUFFER_SIZE  30
+
+char				**ft_split(char *str);
 
 void tri_iteratif(char *tableau[], int taille)
 {
@@ -31,46 +25,43 @@ void tri_iteratif(char *tableau[], int taille)
           tableau[j] = temp;
         }
 }
-char lecturefichier(FILE* fichier , char **chainedechaine)
+char **lecturefichier(int fd)
 {
-    int i = 0;
-    int x = 0;
-    char lettre;
+	char **tab_char;
+	int x = 0;
+	char file_str[BUFFER_SIZE + 1];
 
-    while(lettre != EOF)
-    {
-        while(lettre != '\n')
-        {
-            lettre = fgetc(fichier);
-            chainedechaine[x][i] = lettre;
-            i++;
-        }
-        x++;
-    }
+	while ((x = read(fd, file_str, BUFFER_SIZE)))
+		file_str[x] = '\0';
+	char *output = malloc(sizeof(char) * x);
+	while ((x = read(fd, file_str, x)))
+		output[x] = '\0';
+	tab_char = ft_split(output);
+	return (tab_char);
+
 }
 
 int main()
 {
-    char **chainedechaine = NULL;
-    FILE* fichier = NULL;
     int x = 0;
     int y = 0;
+	int i = 0;
 
-    fichier = fopen("stock.txt", "r");
+    int fd = open("stock.txt", O_RDONLY);
     
-    chainedechaine = malloc(sizeof(char*) * ft_strlen_ligne_fichier(fichier));
+    char **chainedechaine = lecturefichier(fd);
 
-    lecturefichier(fichier, chainedechaine);
+	while(chainedechaine[i])
+		i++;
+    tri_iteratif(chainedechaine , chainedechaine[i]);
 
-    tri_iteratif(chainedechaine , ft_strlen_ligne_fichier(fichier));
 
-    
-    while(x <= ft_strlen_ligne_fichier(fichier));
+    while(x <= i)
+	{
         printf("%s", chainedechaine[x]);
         x++;
-
-    
-
+	}
+	free(chainedechaine);
 
 
 
