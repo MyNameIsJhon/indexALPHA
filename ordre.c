@@ -7,9 +7,30 @@
 #include <unistd.h>
 
 
-#define BUFFER_SIZE  30
+#define BUFFER_SIZE  1
 
 char				**ft_split(char *str);
+
+size_t get_file_len(char *filepath)
+{
+	long int			fd;
+	long int			x;
+	long int			file_len;
+	char				buff[BUFFER_SIZE + 1];
+
+	file_len = 0;
+	fd = open(filepath, O_RDONLY);
+	if (fd == -1)
+		return (0);
+	while ((x = read(fd, buff, BUFFER_SIZE)))
+	{
+		buff[x] = '\0';
+		file_len = file_len + x;
+	}
+	if (close(fd) == -1)
+		return (0);
+	return (file_len);
+}
 
 void tri_iteratif(char *tableau[], int taille)
 {
@@ -25,18 +46,21 @@ void tri_iteratif(char *tableau[], int taille)
           tableau[j] = temp;
         }
 }
-char **lecturefichier(int fd)
+char **lecturefichier(char *filepath)
 {
-	char **tab_char;
-	int x = 0;
-	char file_str[BUFFER_SIZE + 1];
+	char 		**tab_char;
+	size_t 		file_len;
+	long int 	x;
+	long int 	fd;
 
-	while ((x = read(fd, file_str, BUFFER_SIZE)))
-		file_str[x] = '\0';
-	char *output = malloc(sizeof(char) * x);
-	while ((x = read(fd, file_str, x)))
-		output[x] = '\0';
+	fd = open(filepath, O_RDONLY);
+	file_len = get_file_len(filepath);
+	char *output = malloc(sizeof(char) * file_len);
+	while ((x = read(fd, output, file_len)))
+		output[file_len] = '\0';
 	tab_char = ft_split(output);
+	free(output);
+	close(fd);
 	return (tab_char);
 
 }
@@ -46,20 +70,20 @@ int main()
     int x = 0;
     int y = 0;
 	int i = 0;
-
-    int fd = open("stock.txt", O_RDONLY);
-    
-    char **chainedechaine = lecturefichier(fd);
+	char *filepath = "stock.txt";
+    char **chainedechaine = lecturefichier(filepath);
 
 	while(chainedechaine[i])
-		i++;
-    tri_iteratif(chainedechaine , chainedechaine[i]);
-
-
-    while(x <= i)
 	{
-        printf("%s", chainedechaine[x]);
-        x++;
+		printf("chaine avant = %s\n" ,chainedechaine[i]);
+		i++;
+	}
+    tri_iteratif(chainedechaine , chainedechaine[i]);
+	i = 0;
+	while(chainedechaine[i])
+	{
+		printf("chaine apres = %s\n" ,chainedechaine[i]);
+		i++;
 	}
 	free(chainedechaine);
 
